@@ -1,0 +1,14 @@
+# Ignore the dist directory
+/dist
+
+.cabal-sandbox
+cabal.sandbox.config
+
+.DS_Store
+
+/client_session_key.aes
+/log/access.log
+/log/error.log
+
+**/*.swp
+.stack-work/*
