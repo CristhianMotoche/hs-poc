@@ -1,0 +1,21 @@
+name:                as-test-ygo
+version:             0.1.0.0
+github:              "githubuser/as-test-ygo"
+license:             WFTPL
+description:         Testing aeson-schemas
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- aeson
+- aeson-schemas
+- text
+
+executables:
+  as-test-ygo-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
