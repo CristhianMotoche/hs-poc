@@ -1,0 +1,33 @@
+---
+name: Build and test
+on: push
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use stack
+        uses: actions/setup-haskell@v1.1
+        with:
+          enable-stack: true
+          stack-version: 'latest'
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.stack
+            .stack-work
+          key: stack-build-${{ hashFiles('Neopolitan.cabal') }}-${{ hashFiles('stack.yaml.lock') }}
+          restore-keys: |
+            stack-build-${{ hashFiles('Neopolitan.cabal') }}-
+            stack-build-
+
+      - name: Install dependencies
+        run: stack build --test --only-dependencies
+
+      - name: Build and test
+        run: stack build --test
