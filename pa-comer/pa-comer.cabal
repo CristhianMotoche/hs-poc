@@ -1,0 +1,28 @@
+cabal-version:      3.4
+name:               pa-comer
+
+-- See the Haskell package versioning policy (PVP) for standards
+-- guiding when and how versions should be incremented.
+-- https://pvp.haskell.org
+-- PVP summary:     +-+------- breaking API changes
+--                  | | +----- non-breaking API additions
+--                  | | | +--- code changes with no API change
+version:            0.1.0.0
+synopsis:           Simple meal planner
+license:            MIT
+license-file:       LICENSE
+author:             CristhianMotoche
+maintainer:         cristhian.motoche@gmail.com
+category:           Health
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+
+common warnings
+    ghc-options: -Wall
+
+executable pa-comer
+    import:           warnings
+    main-is:          Main.hs
+    build-depends:    base ^>=4.17.1.0
+    hs-source-dirs:   app
+    default-language: Haskell2010
