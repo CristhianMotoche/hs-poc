@@ -26,6 +26,8 @@ executable pa-comer
     build-depends:    base ^>=4.17.1.0,
                       servant ^>= 0.20.1,
                       servant-server ^>= 0.20,
+                      beam-core ^>= 0.10,
+                      beam-sqlite ^>= 0.5,
                       warp,
                       http-media,
                       bytestring,

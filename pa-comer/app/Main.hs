@@ -7,6 +7,7 @@ module Main where
 
 import Data.ByteString.Lazy as Lazy
 import Data.Proxy
+import Models
 import Network.HTTP.Media ((//), (/:))
 import Network.Wai.Handler.Warp (run)
 import Servant.API
@@ -25,37 +26,7 @@ instance MimeRender HTML RawHtml where
   mimeRender _ = unRaw
 
 type MealsAPI = "meals" :> Get '[HTML] RawHtml
--- ^ My types
-
-newtype Ingredient = Ingredient
-  { iName :: String
-  }
-
-data Proportion = Proportion
-  { pQuantity :: Int,
-    pIngredient :: Ingredient
-  }
-
-data Recipe = Recipe
-  { rName :: String,
-    rProportions :: [Proportion]
-  }
-
-recipies :: [Recipe]
-recipies =
-  [ Recipe
-      { rName = "Tigrillo",
-        rProportions =
-          [ Proportion
-              { pQuantity = 1,
-                pIngredient =
-                  Ingredient
-                    { iName = "Plantain"
-                    }
-              }
-          ]
-      }
-  ]
+-- ^ Servant Handlers
 
 mealHandler :: Handler RawHtml
 mealHandler = do
@@ -66,6 +37,15 @@ myServer = mealHandler
 
 port :: Int
 port = 8080
+-- ^  DB Seed
+
+meals :: [Meal]
+meals =
+  [ Meal "Tigrillo" "Platano, queso y huevos" "Desayuno",
+    Meal "Seco de pollo" "Pollo, arroz, y encurtido" "Almuerzo",
+    Meal "Ensalada de atún" "Atún y vegetales" "Cena"
+  ]
+-- ^  Main
 
 main :: IO ()
 main = do
