@@ -28,6 +28,7 @@ executable pa-comer
                       servant-server ^>= 0.20,
                       beam-core ^>= 0.10,
                       beam-sqlite ^>= 0.5,
+                      sqlite-simple,
                       warp,
                       http-media,
                       bytestring,

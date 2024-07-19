@@ -1,0 +1,1 @@
+CREATE TABLE meals (name VARCHAR NOT NULL, description VARCHAR NOT NULL, type VARCHAR NOT NULL, PRIMARY KEY( name ));

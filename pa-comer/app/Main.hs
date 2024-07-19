@@ -7,11 +7,13 @@ module Main where
 
 import Data.ByteString.Lazy as Lazy
 import Data.Proxy
+import Database.SQLite.Simple
 import Models
 import Network.HTTP.Media ((//), (/:))
 import Network.Wai.Handler.Warp (run)
 import Servant.API
 import Servant.Server
+import System.Environment
 
 -- ^ Servant stuff
 
@@ -37,17 +39,19 @@ myServer = mealHandler
 
 port :: Int
 port = 8080
--- ^  DB Seed
 
-meals :: [Meal]
-meals =
-  [ Meal "Tigrillo" "Platano, queso y huevos" "Desayuno",
-    Meal "Seco de pollo" "Pollo, arroz, y encurtido" "Almuerzo",
-    Meal "Ensalada de atún" "Atún y vegetales" "Cena"
-  ]
+dbFile :: String
+dbFile = "pacomer.db"
 -- ^  Main
 
 main :: IO ()
 main = do
-  putStrLn $ "Server listening on port " <> show port <> "..."
-  run port (serve (Proxy :: Proxy MealsAPI) myServer)
+  putStrLn $ "Openning DB File" <> dbFile
+  args <- getArgs
+  conn <- open dbFile
+  if "seed" `Prelude.elem` args
+    then seed conn
+    else do
+      allMeals conn
+      putStrLn $ "Server listening on port " <> show port <> "..."
+      run port (serve (Proxy :: Proxy MealsAPI) myServer)
