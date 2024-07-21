@@ -45,8 +45,8 @@ paComerDb :: DatabaseSettings be PaComerDb
 paComerDb = defaultDbSettings
 -- ^ Seed database
 
-meals :: [Meal]
-meals =
+initialMeals :: [Meal]
+initialMeals =
   [ Meal "Tigrillo" "Platano, queso y huevos" "Desayuno",
     Meal "Seco de pollo" "Pollo, arroz, y encurtido" "Almuerzo",
     Meal "Ensalada de atún" "Atún y vegetales" "Cena"
@@ -57,11 +57,12 @@ seed conn =
   runBeamSqliteDebug putStrLn {- for debug output -} conn $
     runInsert $
       insert (_pacomerMeals paComerDb) $
-        insertValues meals
+        insertValues initialMeals
 
 allMealsQ = all_ (_pacomerMeals paComerDb)
 
+allMeals :: Connection -> IO [Meal]
 allMeals conn =
-  runBeamSqliteDebug putStrLn conn $ do
-    ms <- runSelectReturningList $ select allMealsQ
-    mapM_ (liftIO . putStrLn . show) ms
+  runBeamSqliteDebug putStrLn conn $
+    runSelectReturningList $
+      select allMealsQ

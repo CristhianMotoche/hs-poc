@@ -5,8 +5,11 @@
 
 module Main where
 
-import Data.ByteString.Lazy as Lazy
+import Control.Monad.IO.Class
+import qualified Data.ByteString.Lazy as Lazy
+import qualified Data.ByteString.Lazy.Char8 as Lazy8
 import Data.Proxy
+import qualified Data.Text as T
 import Database.SQLite.Simple
 import Models
 import Network.HTTP.Media ((//), (/:))
@@ -30,11 +33,39 @@ instance MimeRender HTML RawHtml where
 type MealsAPI = "meals" :> Get '[HTML] RawHtml
 -- ^ Servant Handlers
 
-mealHandler :: Handler RawHtml
-mealHandler = do
-  return (RawHtml $ "<body><i>Hello</i> <strong>World</strong></body>")
+fmtMeal :: Meal -> String
+fmtMeal meal =
+  T.unpack $
+    mconcat $
+      [ "<p>",
+        _mealName meal,
+        "</p>",
+        "<p>",
+        _mealDescription meal,
+        "</p>",
+        "<p>",
+        _mealType meal,
+        "</p>"
+      ]
 
-myServer :: Server MealsAPI
+mealHandler :: Connection -> Handler RawHtml
+mealHandler conn = do
+  meals <- liftIO $ allMeals conn
+  return $
+    RawHtml $
+      mconcat $
+        [ "<html>",
+          "<head>",
+          "<meta charset='utf-8'>",
+          "</head>",
+          "<body>"
+        ]
+          ++ map (Lazy8.pack . fmtMeal) meals
+          ++ [ "</html>",
+               "</body>"
+             ]
+
+myServer :: Connection -> Server MealsAPI
 myServer = mealHandler
 
 port :: Int
@@ -49,9 +80,8 @@ main = do
   putStrLn $ "Openning DB File" <> dbFile
   args <- getArgs
   conn <- open dbFile
-  if "seed" `Prelude.elem` args
+  if "seed" `elem` args
     then seed conn
     else do
-      allMeals conn
       putStrLn $ "Server listening on port " <> show port <> "..."
-      run port (serve (Proxy :: Proxy MealsAPI) myServer)
+      run port (serve (Proxy :: Proxy MealsAPI) $ myServer conn)
