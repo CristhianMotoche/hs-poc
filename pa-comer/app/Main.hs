@@ -7,9 +7,10 @@ module Main where
 
 import Control.Monad.IO.Class
 import qualified Data.ByteString.Lazy as Lazy
-import qualified Data.ByteString.Lazy.Char8 as Lazy8
 import Data.Proxy
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as TL
 import Database.SQLite.Simple
 import Models
 import Network.HTTP.Media ((//), (/:))
@@ -33,20 +34,19 @@ instance MimeRender HTML RawHtml where
 type MealsAPI = "meals" :> Get '[HTML] RawHtml
 -- ^ Servant Handlers
 
-fmtMeal :: Meal -> String
+fmtMeal :: Meal -> T.Text
 fmtMeal meal =
-  T.unpack $
-    mconcat $
-      [ "<p>",
-        _mealName meal,
-        "</p>",
-        "<p>",
-        _mealDescription meal,
-        "</p>",
-        "<p>",
-        _mealType meal,
-        "</p>"
-      ]
+  mconcat $
+    [ "<p>",
+      _mealName meal,
+      "</p>",
+      "<p>",
+      _mealDescription meal,
+      "</p>",
+      "<p>",
+      _mealType meal,
+      "</p>"
+    ]
 
 mealHandler :: Connection -> Handler RawHtml
 mealHandler conn = do
@@ -60,7 +60,7 @@ mealHandler conn = do
           "</head>",
           "<body>"
         ]
-          ++ map (Lazy8.pack . fmtMeal) meals
+          ++ map (TL.encodeUtf8 . TL.fromStrict . fmtMeal) meals
           ++ [ "</html>",
                "</body>"
              ]
