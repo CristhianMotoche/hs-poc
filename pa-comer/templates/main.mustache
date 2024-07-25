@@ -4,8 +4,21 @@
   </head>
   <body>
     <h1>Meals Options</h1>
-    {{# meals }}
-    {{> meal }}
-    {{/ meals }}
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Time</th>
+      </thead>
+      <tbody>
+        {{# meals }}
+          <tr>
+            <td>{{& name }}</td>
+            <td>{{& description }}</td>
+            <td>{{& type }}</td>
+          </tr>
+        {{/ meals }}
+      </tbody>
+    </table>
   </body>
 </html>
