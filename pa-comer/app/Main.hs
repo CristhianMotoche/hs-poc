@@ -36,20 +36,6 @@ instance MimeRender HTML RawHtml where
 type MealsAPI = "meals" :> Get '[HTML] RawHtml
 -- ^ Servant Handlers
 
-fmtMeal :: Meal -> T.Text
-fmtMeal meal =
-  mconcat $
-    [ "<p>",
-      _mealName meal,
-      "</p>",
-      "<p>",
-      _mealDescription meal,
-      "</p>",
-      "<p>",
-      _mealType meal,
-      "</p>"
-    ]
-
 mealHandler :: Connection -> Handler RawHtml
 mealHandler conn = do
   template <- liftIO $ compileMustacheDir "main" "templates"
