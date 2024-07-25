@@ -6,6 +6,7 @@
 module Main where
 
 import Control.Monad.IO.Class
+import Data.Aeson (ToJSON (toJSON), object, (.=))
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Proxy
 import qualified Data.Text as T
@@ -18,6 +19,7 @@ import Network.Wai.Handler.Warp (run)
 import Servant.API
 import Servant.Server
 import System.Environment
+import Text.Mustache
 
 -- ^ Servant stuff
 
@@ -50,20 +52,11 @@ fmtMeal meal =
 
 mealHandler :: Connection -> Handler RawHtml
 mealHandler conn = do
+  template <- liftIO $ compileMustacheDir "main" "templates"
   meals <- liftIO $ allMeals conn
   return $
-    RawHtml $
-      mconcat $
-        [ "<html>",
-          "<head>",
-          "<meta charset='utf-8'>",
-          "</head>",
-          "<body>"
-        ]
-          ++ map (TL.encodeUtf8 . TL.fromStrict . fmtMeal) meals
-          ++ [ "</html>",
-               "</body>"
-             ]
+    RawHtml . TL.encodeUtf8 $
+      renderMustache template (toJSON $ object ["meals" .= meals])
 
 myServer :: Connection -> Server MealsAPI
 myServer = mealHandler

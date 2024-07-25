@@ -9,6 +9,7 @@
 
 module Models where
 
+import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Sqlite
@@ -30,6 +31,14 @@ type MealId = PrimaryKey MealT Identity
 instance Table MealT where
   data PrimaryKey MealT f = MealId (Columnar f Text) deriving (Generic, Beamable)
   primaryKey = MealId . _mealName
+
+instance ToJSON Meal where
+  toJSON (Meal name desc type_) =
+    object
+      [ "name" .= name,
+        "description" .= desc,
+        "type" .= type_
+      ]
 
 deriving instance Show Meal
 
