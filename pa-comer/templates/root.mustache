@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <meta charset='utf-8'>
+  </head>
+  <body>
+    <h1>Meals For Today</h1>
+    <h2>Breakfast</h2>
+    {{# breakfast }}
+      <p>{{& name }}</p>
+      <p>{{& description }}</p>
+    {{/ breakfast }}
+
+    <h2>Lunch</h2>
+    {{# lunch }}
+      <p>{{& name }}</p>
+      <p>{{& description }}</p>
+    {{/ lunch }}
+
+    <h2>Dinner</h2>
+    {{# dinner }}
+      <p>{{& name }}</p>
+      <p>{{& description }}</p>
+    {{/ dinner }}
+  </body>
+</html>

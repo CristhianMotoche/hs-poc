@@ -8,9 +8,8 @@ module Main where
 import Control.Monad.IO.Class
 import Data.Aeson (ToJSON (toJSON), object, (.=))
 import qualified Data.ByteString.Lazy as Lazy
+import Data.Foldable (find)
 import Data.Proxy
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TL
 import Database.SQLite.Simple
 import Models
@@ -33,7 +32,9 @@ instance Accept HTML where
 instance MimeRender HTML RawHtml where
   mimeRender _ = unRaw
 
-type MealsAPI = "meals" :> Get '[HTML] RawHtml
+type MealsAPI =
+  Get '[HTML] RawHtml
+    :<|> "meals" :> Get '[HTML] RawHtml
 -- ^ Servant Handlers
 
 mealHandler :: Connection -> Handler RawHtml
@@ -44,8 +45,25 @@ mealHandler conn = do
     RawHtml . TL.encodeUtf8 $
       renderMustache template (toJSON $ object ["meals" .= meals])
 
+rootHandler :: Connection -> Handler RawHtml
+rootHandler conn = do
+  template <- liftIO $ compileMustacheDir "root" "templates"
+  meals <- liftIO $ allMeals conn
+  let breakfast = find (\x -> _mealType x == "Desayuno") meals
+      lunch = find (\x -> _mealType x == "Almuerzo") meals
+      dinner = find (\x -> _mealType x == "Cena") meals
+  return $
+    RawHtml . TL.encodeUtf8 $
+      renderMustache template $
+        toJSON $
+          object
+            [ "breakfast" .= breakfast,
+              "lunch" .= lunch,
+              "dinner" .= dinner
+            ]
+
 myServer :: Connection -> Server MealsAPI
-myServer = mealHandler
+myServer conn = rootHandler conn :<|> mealHandler conn
 
 port :: Int
 port = 8080
