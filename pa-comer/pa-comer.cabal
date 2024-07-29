@@ -31,6 +31,7 @@ executable pa-comer
                       beam-sqlite ^>= 0.5,
                       stache ^>= 2.3,
                       aeson ^>= 2.2,
+                      http-api-data ^>= 0.6.1,
                       sqlite-simple,
                       warp,
                       http-media,

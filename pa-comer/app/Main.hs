@@ -19,7 +19,11 @@ import Servant.API
 import Servant.Server
 import System.Environment
 import Text.Mustache
+import Web.FormUrlEncoded
 
+-- ^ Some types
+
+type MenuForm = Form
 -- ^ Servant stuff
 
 data HTML = HTML
@@ -35,6 +39,7 @@ instance MimeRender HTML RawHtml where
 type MealsAPI =
   Get '[HTML] RawHtml
     :<|> "meals" :> Get '[HTML] RawHtml
+    :<|> "menu" :> ReqBody '[FormUrlEncoded] MenuForm :> Post '[HTML] RawHtml
 -- ^ Servant Handlers
 
 mealHandler :: Connection -> Handler RawHtml
@@ -62,8 +67,14 @@ rootHandler conn = do
               "dinner" .= dinner
             ]
 
+postMenuHandler :: Connection -> MenuForm -> Handler RawHtml
+postMenuHandler _ _ = undefined
+
 myServer :: Connection -> Server MealsAPI
-myServer conn = rootHandler conn :<|> mealHandler conn
+myServer conn =
+  rootHandler conn
+    :<|> mealHandler conn
+    :<|> postMenuHandler conn
 
 port :: Int
 port = 8080
