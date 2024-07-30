@@ -14,7 +14,8 @@ import qualified Data.Text.Lazy.Encoding as TL
 import Database.SQLite.Simple
 import Models
 import Network.HTTP.Media ((//), (/:))
-import Network.Wai.Handler.Warp (run)
+import Network.Wai.Handler.Warp (defaultSettings, runSettings, setLogger, setPort)
+import Network.Wai.Logger
 import Servant.API
 import Servant.Server
 import System.Environment
@@ -79,6 +80,9 @@ myServer conn =
 port :: Int
 port = 8080
 
+app :: Connection -> Application
+app conn = serve (Proxy :: Proxy MealsAPI) $ myServer conn
+
 dbFile :: String
 dbFile = "pacomer.db"
 -- ^  Main
@@ -92,4 +96,6 @@ main = do
     then seed conn
     else do
       putStrLn $ "Server listening on port " <> show port <> "..."
-      run port (serve (Proxy :: Proxy MealsAPI) $ myServer conn)
+      withStdoutLogger $ \aplogger -> do
+        let settings = setPort port $ setLogger aplogger defaultSettings
+        runSettings settings (app conn)

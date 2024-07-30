@@ -32,6 +32,7 @@ executable pa-comer
                       stache ^>= 2.3,
                       aeson ^>= 2.2,
                       http-api-data ^>= 0.6.1,
+                      wai-logger ^>= 2.4.1,
                       sqlite-simple,
                       warp,
                       http-media,
