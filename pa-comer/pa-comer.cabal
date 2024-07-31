@@ -33,6 +33,7 @@ executable pa-comer
                       aeson ^>= 2.2,
                       http-api-data ^>= 0.6.1,
                       wai-logger ^>= 2.4.1,
+                      time,
                       sqlite-simple,
                       warp,
                       http-media,

@@ -5,17 +5,43 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 
 module Models where
 
 import Data.Aeson (ToJSON (..), object, (.=))
+import Data.Int
 import Data.Text (Text)
+import Data.Time.Clock (UTCTime)
 import Database.Beam
 import Database.Beam.Sqlite
 import Database.SQLite.Simple
 
 -- ^ Tables
+
+data MenuT f = Menu
+  { _menuId :: Columnar f Int32,
+    _menuTime :: Columnar f UTCTime
+  }
+  deriving (Generic, Beamable)
+
+type MenuId = PrimaryKey MenuT Identity
+
+instance Table MenuT where
+  data PrimaryKey MenuT f = MenuId (Columnar f Int32) deriving (Generic, Beamable)
+  primaryKey = MenuId . _menuId
+
+data MealForMenuT f = MealForMenu
+  { _mealformenuId :: Columnar f Int32,
+    _mealformenuMenu :: PrimaryKey MenuT f,
+    _mealformenuMeal :: PrimaryKey MealT f
+  }
+  deriving (Generic, Beamable)
+
+type MealForMenuId = PrimaryKey MealForMenuT Identity
+
+instance Table MealForMenuT where
+  data PrimaryKey MealForMenuT f = MealForMenuId (Columnar f Int32) deriving (Generic, Beamable)
+  primaryKey = MealForMenuId . _mealformenuId
 
 data MealT f = Meal
   { _mealName :: Columnar f Text,
@@ -46,7 +72,9 @@ deriving instance Eq Meal
 -- ^ Database
 
 data PaComerDb f = PaComerDb
-  { _pacomerMeals :: f (TableEntity MealT)
+  { _pacomerMeals :: f (TableEntity MealT),
+    _pacomerMenus :: f (TableEntity MenuT),
+    _pacomerMealForMenus :: f (TableEntity MealForMenuT)
   }
   deriving (Generic, Database be)
 
@@ -68,10 +96,10 @@ seed conn =
       insert (_pacomerMeals paComerDb) $
         insertValues initialMeals
 
-allMealsQ = all_ (_pacomerMeals paComerDb)
-
 allMeals :: Connection -> IO [Meal]
 allMeals conn =
   runBeamSqliteDebug putStrLn conn $
     runSelectReturningList $
       select allMealsQ
+  where
+    allMealsQ = all_ (_pacomerMeals paComerDb)
