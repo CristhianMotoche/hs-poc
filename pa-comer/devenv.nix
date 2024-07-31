@@ -7,7 +7,8 @@
   ];
 
   languages.haskell.enable = true;
-  languages.haskell.package = pkgs.haskell.compiler.ghc945;
+  languages.haskell.languageServer = pkgs.haskell-language-server;
+  languages.haskell.package = pkgs.haskell.compiler.ghc964;
 
   pre-commit.hooks.ormolu.enable = true;
 }
