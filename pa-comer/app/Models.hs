@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveAnyClass #-}
--- > :set -XDeriveGeneric -XGADTs -XOverloadedStrings -XFlexibleContexts -XFlexibleInstances -XTypeFamilies -XTypeApplications -XDeriveAnyClass
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -23,6 +22,8 @@ data MenuT f = Menu
     _menuTime :: Columnar f UTCTime
   }
   deriving (Generic, Beamable)
+
+type Menu = MenuT Identity
 
 type MenuId = PrimaryKey MenuT Identity
 
@@ -103,3 +104,10 @@ allMeals conn =
       select allMealsQ
   where
     allMealsQ = all_ (_pacomerMeals paComerDb)
+
+insertMenu :: Connection -> Menu -> IO ()
+insertMenu conn menu =
+  runBeamSqliteDebug putStrLn {- for debug output -} conn $
+    runInsert $
+      insert (_pacomerMenus paComerDb) $
+        insertValues [menu]

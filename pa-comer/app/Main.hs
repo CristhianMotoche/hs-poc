@@ -11,6 +11,7 @@ import qualified Data.ByteString.Lazy as Lazy
 import Data.Foldable (find)
 import Data.Proxy
 import qualified Data.Text.Lazy.Encoding as TL
+import Data.Time.Clock (getCurrentTime)
 import Database.SQLite.Simple
 import Models
 import Network.HTTP.Media ((//), (/:))
@@ -40,7 +41,7 @@ instance MimeRender HTML RawHtml where
 type MealsAPI =
   Get '[HTML] RawHtml
     :<|> "meals" :> Get '[HTML] RawHtml
-    :<|> "menu" :> ReqBody '[FormUrlEncoded] MenuForm :> Post '[HTML] RawHtml
+    :<|> "menu" :> ReqBody '[FormUrlEncoded] MenuForm :> Post '[HTML] NoContent
 -- ^ Servant Handlers
 
 mealHandler :: Connection -> Handler RawHtml
@@ -68,8 +69,12 @@ rootHandler conn = do
               "dinner" .= dinner
             ]
 
-postMenuHandler :: Connection -> MenuForm -> Handler RawHtml
-postMenuHandler _ _ = undefined
+postMenuHandler :: Connection -> MenuForm -> Handler NoContent
+postMenuHandler conn _ = do
+  liftIO $ do
+    time <- getCurrentTime
+    insertMenu conn (Menu 1 time)
+  return NoContent
 
 myServer :: Connection -> Server MealsAPI
 myServer conn =
