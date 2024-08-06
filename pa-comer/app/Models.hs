@@ -10,7 +10,7 @@ module Models where
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Int
 import Data.Text (Text)
-import Data.Time.Clock (UTCTime)
+import Data.Time.LocalTime
 import Database.Beam
 import Database.Beam.Sqlite
 import Database.SQLite.Simple
@@ -19,7 +19,7 @@ import Database.SQLite.Simple
 
 data MenuT f = Menu
   { _menuId :: Columnar f Int32,
-    _menuTime :: Columnar f UTCTime
+    _menuTime :: Columnar f LocalTime
   }
   deriving (Generic, Beamable)
 
@@ -105,9 +105,10 @@ allMeals conn =
   where
     allMealsQ = all_ (_pacomerMeals paComerDb)
 
-insertMenu :: Connection -> Menu -> IO ()
-insertMenu conn menu =
+insertMenu :: Connection -> IO ()
+insertMenu conn = do
   runBeamSqliteDebug putStrLn {- for debug output -} conn $
     runInsert $
       insert (_pacomerMenus paComerDb) $
-        insertValues [menu]
+        insertExpressions
+          [Menu default_ currentTimestamp_]

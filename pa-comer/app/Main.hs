@@ -11,7 +11,6 @@ import qualified Data.ByteString.Lazy as Lazy
 import Data.Foldable (find)
 import Data.Proxy
 import qualified Data.Text.Lazy.Encoding as TL
-import Data.Time.Clock (getCurrentTime)
 import Database.SQLite.Simple
 import Models
 import Network.HTTP.Media ((//), (/:))
@@ -71,9 +70,7 @@ rootHandler conn = do
 
 postMenuHandler :: Connection -> MenuForm -> Handler NoContent
 postMenuHandler conn _ = do
-  liftIO $ do
-    time <- getCurrentTime
-    insertMenu conn (Menu 1 time)
+  liftIO $ insertMenu conn
   return NoContent
 
 myServer :: Connection -> Server MealsAPI
