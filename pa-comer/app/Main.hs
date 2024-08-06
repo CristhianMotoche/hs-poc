@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
@@ -10,8 +11,10 @@ import Data.Aeson (ToJSON (toJSON), object, (.=))
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Foldable (find)
 import Data.Proxy
+import Data.String (IsString)
 import qualified Data.Text.Lazy.Encoding as TL
 import Database.SQLite.Simple
+import GHC.TypeLits
 import Models
 import Network.HTTP.Media ((//), (/:))
 import Network.Wai.Handler.Warp (defaultSettings, runSettings, setLogger, setPort)
@@ -27,6 +30,16 @@ import Web.FormUrlEncoded
 type MenuForm = Form
 -- ^ Servant stuff
 
+type PostRedirect (code :: Nat) loc =
+  Verb 'POST code '[HTML] (Headers '[Header "Location" loc] NoContent)
+
+redirect ::
+  (ToHttpApiData loc) =>
+  -- | what to put in the 'Location' header
+  loc ->
+  Handler (Headers '[Header "Location" loc] NoContent)
+redirect a = return (addHeader a NoContent)
+
 data HTML = HTML
 
 newtype RawHtml = RawHtml {unRaw :: Lazy.ByteString}
@@ -40,7 +53,7 @@ instance MimeRender HTML RawHtml where
 type MealsAPI =
   Get '[HTML] RawHtml
     :<|> "meals" :> Get '[HTML] RawHtml
-    :<|> "menu" :> ReqBody '[FormUrlEncoded] MenuForm :> Post '[HTML] NoContent
+    :<|> "menu" :> ReqBody '[FormUrlEncoded] MenuForm :> PostRedirect 301 String
 -- ^ Servant Handlers
 
 mealHandler :: Connection -> Handler RawHtml
@@ -68,10 +81,10 @@ rootHandler conn = do
               "dinner" .= dinner
             ]
 
-postMenuHandler :: Connection -> MenuForm -> Handler NoContent
+postMenuHandler :: (ToHttpApiData loc, IsString loc) => Connection -> MenuForm -> Handler (Headers '[Header "Location" loc] NoContent)
 postMenuHandler conn _ = do
   liftIO $ insertMenu conn
-  return NoContent
+  redirect "/"
 
 myServer :: Connection -> Server MealsAPI
 myServer conn =
