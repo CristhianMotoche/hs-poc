@@ -9,6 +9,7 @@ module Models where
 
 import Data.Aeson (ToJSON (..), object, (.=))
 import Data.Int
+import Data.Maybe (listToMaybe)
 import Data.Text (Text)
 import Data.Time.LocalTime
 import Database.Beam
@@ -105,10 +106,34 @@ allMeals conn =
   where
     allMealsQ = all_ (_pacomerMeals paComerDb)
 
+getFirstMealByType :: Connection -> Text -> IO (Maybe Meal)
+getFirstMealByType conn type_ = fmap listToMaybe
+  <$> runBeamSqliteDebug putStrLn conn
+  $ runSelectReturningList
+  $ select
+  $ do
+    meals <- all_ (_pacomerMeals paComerDb)
+    guard_ (_mealType meals ==. val_ type_)
+    return meals
+
 insertMenu :: Connection -> IO ()
 insertMenu conn = do
-  runBeamSqliteDebug putStrLn {- for debug output -} conn $
+  -- YOLO!
+  (Just bf, Just ln, Just dn) <-
+    (,,)
+      -- JK I'll fix this later
+      <$> getFirstMealByType conn "Desayuno"
+      <*> getFirstMealByType conn "Almuerzo"
+      <*> getFirstMealByType conn "Cena"
+  runBeamSqliteDebug putStrLn {- for debug output -} conn $ do
+    [menu] <-
+      runInsertReturningList $
+        insertReturning (_pacomerMenus paComerDb) $
+          insertExpressions [Menu default_ currentTimestamp_]
     runInsert $
-      insert (_pacomerMenus paComerDb) $
+      insert (_pacomerMealForMenus paComerDb) $
         insertExpressions
-          [Menu default_ currentTimestamp_]
+          [ MealForMenu default_ (val_ $ pk menu) (val_ $ pk bf),
+            MealForMenu default_ (val_ $ pk menu) (val_ $ pk ln),
+            MealForMenu default_ (val_ $ pk menu) (val_ $ pk dn)
+          ]
