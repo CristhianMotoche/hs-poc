@@ -69,8 +69,9 @@ rootHandler :: Connection -> Handler RawHtml
 rootHandler conn = do
   template <- liftIO $ compileMustacheDir "root" "templates"
   currentTime <- liftIO getCurrentTime
-  meals <- liftIO $ todaysMenu conn (utctDay currentTime)
-  let breakfast = find (\x -> _mealType x == "Desayuno") meals
+  mfms <- liftIO $ todaysMenu conn (utctDay currentTime)
+  let meals = map snd mfms
+      breakfast = find (\x -> _mealType x == "Desayuno") meals
       lunch = find (\x -> _mealType x == "Almuerzo") meals
       dinner = find (\x -> _mealType x == "Cena") meals
   return $

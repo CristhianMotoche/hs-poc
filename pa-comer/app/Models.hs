@@ -107,21 +107,25 @@ allMeals conn =
   where
     allMealsQ = all_ (_pacomerMeals paComerDb)
 
-todaysMenu :: Connection -> Day -> IO [Meal]
-todaysMenu conn day = do
-  [menu] <- runBeamSqliteDebug putStrLn conn $
+todaysMenu :: Connection -> Day -> IO [(Menu, Meal)]
+todaysMenu conn day =
+  runBeamSqliteDebug putStrLn conn $
     runSelectReturningList $
-      select $ do
-        menu <- all_ (_pacomerMenus paComerDb)
-        guard_ $
-          between_
-            (_menuTime menu)
-            (val_ $ LocalTime day (TimeOfDay 0 0 0))
-            (val_ $ LocalTime day (TimeOfDay 23 59 0))
-        return menu
-  -- TODO: Get meal_for_menus.meal_name
-  -- TODO: Get meals given the list of `meal_for_menus.meal_name`
-  return []
+      select $
+        manyToMany_
+          (_pacomerMealForMenus paComerDb)
+          _mealformenuMenu
+          _mealformenuMeal
+          ( filter_
+              ( \menu ->
+                  between_
+                    (_menuTime menu)
+                    (val_ $ LocalTime day (TimeOfDay 0 0 0))
+                    (val_ $ LocalTime day (TimeOfDay 23 59 0))
+              )
+              (all_ (_pacomerMenus paComerDb))
+          )
+          (all_ (_pacomerMeals paComerDb))
 
 getFirstMealByType :: Connection -> Text -> IO (Maybe Meal)
 getFirstMealByType conn type_ = fmap listToMaybe
