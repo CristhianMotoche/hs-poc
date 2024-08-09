@@ -13,6 +13,7 @@ import Data.Foldable (find)
 import Data.Proxy
 import Data.String (IsString)
 import qualified Data.Text.Lazy.Encoding as TL
+import Data.Time.Clock
 import Database.SQLite.Simple
 import GHC.TypeLits
 import Models
@@ -67,7 +68,8 @@ mealHandler conn = do
 rootHandler :: Connection -> Handler RawHtml
 rootHandler conn = do
   template <- liftIO $ compileMustacheDir "root" "templates"
-  meals <- liftIO $ allMeals conn
+  currentTime <- liftIO getCurrentTime
+  meals <- liftIO $ todaysMenu conn (utctDay currentTime)
   let breakfast = find (\x -> _mealType x == "Desayuno") meals
       lunch = find (\x -> _mealType x == "Almuerzo") meals
       dinner = find (\x -> _mealType x == "Cena") meals
