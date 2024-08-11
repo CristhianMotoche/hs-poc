@@ -109,23 +109,20 @@ allMeals conn =
 
 todaysMenu :: Connection -> Day -> IO [(Menu, Meal)]
 todaysMenu conn day =
-  runBeamSqliteDebug putStrLn conn $
-    runSelectReturningList $
-      select $
-        manyToMany_
-          (_pacomerMealForMenus paComerDb)
-          _mealformenuMenu
-          _mealformenuMeal
-          ( filter_
-              ( \menu ->
-                  between_
-                    (_menuTime menu)
-                    (val_ $ LocalTime day (TimeOfDay 0 0 0))
-                    (val_ $ LocalTime day (TimeOfDay 23 59 0))
-              )
-              (all_ (_pacomerMenus paComerDb))
-          )
-          (all_ (_pacomerMeals paComerDb))
+  fmap getFromDay
+    <$> runBeamSqliteDebug putStrLn conn
+    $ runSelectReturningList
+    $ select
+    $ manyToMany_
+      (_pacomerMealForMenus paComerDb)
+      _mealformenuMenu
+      _mealformenuMeal
+      (all_ (_pacomerMenus paComerDb))
+      (all_ (_pacomerMeals paComerDb))
+  where
+    -- Work around due to: https://stackoverflow.com/q/78858898/5888408
+    getFromDay =
+      filter (\(menu, _) -> localDay (_menuTime menu) == day)
 
 getFirstMealByType :: Connection -> Text -> IO (Maybe Meal)
 getFirstMealByType conn type_ = fmap listToMaybe
