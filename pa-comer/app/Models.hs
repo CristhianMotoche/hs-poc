@@ -134,24 +134,29 @@ getFirstMealByType conn type_ = fmap listToMaybe
     guard_ (_mealType meals ==. val_ type_)
     return meals
 
-insertMenu :: Connection -> IO ()
+insertMenu :: Connection -> IO (Either String ())
 insertMenu conn = do
-  -- YOLO!
-  (Just bf, Just ln, Just dn) <-
+  (mbf, mln, mdn) <-
     (,,)
-      -- JK I'll fix this later
       <$> getFirstMealByType conn "Desayuno"
       <*> getFirstMealByType conn "Almuerzo"
       <*> getFirstMealByType conn "Cena"
   runBeamSqliteDebug putStrLn {- for debug output -} conn $ do
-    [menu] <-
-      runInsertReturningList $
-        insertReturning (_pacomerMenus paComerDb) $
-          insertExpressions [Menu default_ currentTimestamp_]
-    runInsert $
-      insert (_pacomerMealForMenus paComerDb) $
-        insertExpressions
-          [ MealForMenu default_ (val_ $ pk menu) (val_ $ pk bf),
-            MealForMenu default_ (val_ $ pk menu) (val_ $ pk ln),
-            MealForMenu default_ (val_ $ pk menu) (val_ $ pk dn)
-          ]
+    mmenu <-
+      fmap listToMaybe
+        <$> runInsertReturningList
+        $ insertReturning (_pacomerMenus paComerDb)
+        $ insertExpressions [Menu default_ currentTimestamp_]
+
+    case (mmenu, mbf, mln, mdn) of
+      (Just menu, Just bf, Just ln, Just dn) ->
+        fmap pure $
+          runInsert $
+            insert (_pacomerMealForMenus paComerDb) $
+              insertExpressions
+                [ MealForMenu default_ (val_ $ pk menu) (val_ $ pk bf),
+                  MealForMenu default_ (val_ $ pk menu) (val_ $ pk ln),
+                  MealForMenu default_ (val_ $ pk menu) (val_ $ pk dn)
+                ]
+      (Nothing, _, _, _) -> fail "There is no menu"
+      _ -> fail "There are no meals"

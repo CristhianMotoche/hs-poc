@@ -86,8 +86,10 @@ rootHandler conn = do
 
 postMenuHandler :: (ToHttpApiData loc, IsString loc) => Connection -> MenuForm -> Handler (Headers '[Header "Location" loc] NoContent)
 postMenuHandler conn _ = do
-  liftIO $ insertMenu conn
-  redirect "/"
+  resp <- liftIO $ insertMenu conn
+  case resp of
+    Left str -> fail str
+    _ -> redirect "/"
 
 myServer :: Connection -> Server MealsAPI
 myServer conn =
