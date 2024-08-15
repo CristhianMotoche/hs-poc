@@ -16,6 +16,7 @@ import Data.Time.LocalTime
 import Database.Beam
 import Database.Beam.Sqlite
 import Database.SQLite.Simple
+import System.Random
 
 -- ^ Tables
 
@@ -125,14 +126,20 @@ todaysMenu conn day =
       filter (\(menu, _) -> localDay (_menuTime menu) == day)
 
 getFirstMealByType :: Connection -> Text -> IO (Maybe Meal)
-getFirstMealByType conn type_ = fmap listToMaybe
-  <$> runBeamSqliteDebug putStrLn conn
-  $ runSelectReturningList
-  $ select
-  $ do
-    meals <- all_ (_pacomerMeals paComerDb)
-    guard_ (_mealType meals ==. val_ type_)
-    return meals
+getFirstMealByType conn type_ = do
+  meals <- getMealsByType
+  idx <- getStdRandom (uniformR (0, length meals - 1))
+  print idx
+  return $ meals !? idx
+  where
+    getMealsByType =
+      runBeamSqliteDebug putStrLn conn $
+        runSelectReturningList $
+          select $
+            do
+              meals <- all_ (_pacomerMeals paComerDb)
+              guard_ (_mealType meals ==. val_ type_)
+              return meals
 
 insertMenu :: Connection -> IO (Either String ())
 insertMenu conn = do
@@ -160,3 +167,19 @@ insertMenu conn = do
                 ]
       (Nothing, _, _, _) -> fail "There is no menu"
       _ -> fail "There are no meals"
+
+-- utils
+-- Taken from Data.List in base-4.19
+-- Need to update to GHC 9.8 for that
+(!?) :: [a] -> Int -> Maybe a
+xs !? n
+  | n < 0 = Nothing
+  | otherwise =
+      foldr
+        ( \x r k -> case k of
+            0 -> Just x
+            _ -> r (k - 1)
+        )
+        (const Nothing)
+        xs
+        n
