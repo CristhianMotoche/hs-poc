@@ -11,4 +11,8 @@
       enable = true;
     };
   };
+
+  packages = [
+    pkgs.snappy
+  ];
 }

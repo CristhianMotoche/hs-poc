@@ -1,8 +1,8 @@
 module Main (main) where
 
-import           DataFrames as D
+import           DataFrame as D
 
 main :: IO ()
 main = do
-  df <- D.readCsv "../data/Titanic-Dataset.csv"
-  pure $ D.describeColumns df
+  df <- D.readCsv "data/Titanic-Dataset.csv"
+  print df
