@@ -35,6 +35,11 @@ ghc-options:
 
 library:
   source-dirs: src
+  dependencies:
+  - dataframe >= 0.4.0.0
+  - text
+  exposed-modules:
+  - TitanicColumns
 
 executables:
   da-exe:
