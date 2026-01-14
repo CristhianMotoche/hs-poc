@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.38.1.
+-- This file has been generated from package.yaml by hpack version 0.38.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -49,7 +49,7 @@ executable da-exe
   build-depends:
       base >=4.7 && <5
     , da
-    , dataframe
+    , dataframe >=0.4.0.0
   default-language: Haskell2010
 
 test-suite da-test

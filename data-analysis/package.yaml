@@ -46,7 +46,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - da
-    - dataframe
+    - dataframe >= 0.4.0.0
 
 tests:
   da-test:
