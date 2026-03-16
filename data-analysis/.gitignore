@@ -2,3 +2,5 @@
 *~
 data/
 dist-newstyle/
+.devenv
+.devenv.flake.nix
