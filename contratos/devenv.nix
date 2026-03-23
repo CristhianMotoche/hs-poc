@@ -11,5 +11,9 @@
     package = pkgs.ghc;
   };
 
+  packages = [
+    pkgs.bashInteractive
+  ];
+
   # See full reference at https://devenv.sh/reference/options/
 }
