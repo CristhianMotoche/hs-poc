@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Main (main) where
 
@@ -12,7 +13,15 @@ import Text.Mustache (compileMustacheFile, renderMustache)
 import Text.Pandoc (def, readMarkdown, runIOorExplode, writeDocx)
 
 data TemplateContext = TemplateContext
-  { tenant :: Tenant
+  { tenant :: Tenant,
+    street_one :: String,
+    street_two :: String,
+    canon_price :: Double,
+    canon_price_words :: String,
+    landlords :: [Landlord],
+    banking :: Banking,
+    payment_day :: Integer,
+    dates :: Dates
   }
   deriving (Show, Generic)
 
@@ -29,6 +38,50 @@ data Tenant = Tenant
 instance FromJSON Tenant
 
 instance ToJSON Tenant
+
+data Landlord = Landlord
+  { name :: String,
+    cid :: String
+  }
+  deriving (Show, Generic)
+
+instance FromJSON Landlord
+
+instance ToJSON Landlord
+
+data Banking = Banking
+  { name :: String,
+    cid :: String,
+    number :: String,
+    account :: String
+  }
+  deriving (Show, Generic)
+
+instance FromJSON Banking
+
+instance ToJSON Banking
+
+data Date = Date
+  { d :: Integer,
+    m :: Integer,
+    y :: Integer
+  }
+  deriving (Show, Generic)
+
+instance FromJSON Date
+
+instance ToJSON Date
+
+data Dates = Dates
+  { from :: Date,
+    to :: Date,
+    sign :: Date
+  }
+  deriving (Show, Generic)
+
+instance FromJSON Dates
+
+instance ToJSON Dates
 
 main :: IO ()
 main = do

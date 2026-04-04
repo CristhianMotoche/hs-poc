@@ -9,3 +9,8 @@ devenv.local.nix
 .pre-commit-config.yaml
 
 dist-newstyle
+
+# Do not include the PLANTILLA.md and *.yml config files
+PLANTILLA.md
+*.docx
+data/*.yml
