@@ -62,7 +62,17 @@ dates:
 
 ## Encrypted files
 
-Sensitive files (`PLANTILLA.md` and `data/dep2.yml`) are stored encrypted as `.gpg` files. The password is in LastPass.
+Sensitive files (`PLANTILLA.md` and `data/dep2.yml`) are stored encrypted as `.gpg` files. The password is stored in LastPass under the entry `contratos`.
+
+### Get the password from LastPass
+
+```bash
+# Login (one-time per session)
+lpass login <your-email>
+
+# Retrieve the contratos password
+lpass show --clip --password contratos
+```
 
 ### Decrypt
 
