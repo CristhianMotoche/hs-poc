@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main (main) where
 
-import Data.Aeson (FromJSON, ToJSON (..))
+import Data.Aeson (FromJSON, ToJSON (..), object, (.=))
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text.Lazy as LT
 import qualified Data.Yaml as Yaml
@@ -70,7 +71,29 @@ data Date = Date
 
 instance FromJSON Date
 
-instance ToJSON Date
+instance ToJSON Date where
+  toJSON date =
+    object
+      [ "d" .= d date,
+        "m" .= m date,
+        "y" .= y date,
+        "m_word" .= monthToSpanish (m date)
+      ]
+
+monthToSpanish :: Integer -> String
+monthToSpanish 1 = "Enero"
+monthToSpanish 2 = "Febrero"
+monthToSpanish 3 = "Marzo"
+monthToSpanish 4 = "Abril"
+monthToSpanish 5 = "Mayo"
+monthToSpanish 6 = "Junio"
+monthToSpanish 7 = "Julio"
+monthToSpanish 8 = "Agosto"
+monthToSpanish 9 = "Septiembre"
+monthToSpanish 10 = "Octubre"
+monthToSpanish 11 = "Noviembre"
+monthToSpanish 12 = "Diciembre"
+monthToSpanish _ = "Mes_desconocido"
 
 data Dates = Dates
   { from :: Date,
