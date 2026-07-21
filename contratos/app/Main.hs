@@ -32,7 +32,7 @@ instance ToJSON TemplateContext
 
 data Tenant = Tenant
   { name :: String,
-    cid :: Integer
+    cid :: String
   }
   deriving (Show, Generic)
 
